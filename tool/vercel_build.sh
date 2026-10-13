@@ -25,6 +25,7 @@ flutter --version
 flutter config --enable-web
 flutter precache --web
 flutter pub get
+dart run flutter_launcher_icons
 
 flutter build web --release \
   --dart-define="SUPABASE_URL=$SUPABASE_URL" \
