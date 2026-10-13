@@ -37,7 +37,7 @@ class InventoryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'إدارة المخازن',
+        title: 'Pack Master',
         debugShowCheckedModeBanner: false,
         locale: const Locale('ar'),
         supportedLocales: const [Locale('ar'), Locale('en')],
@@ -369,7 +369,7 @@ class _HomePageState extends State<HomePage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('إدارة المخازن', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('Pack Master', style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
               tooltip: 'تسجيل الخروج',
