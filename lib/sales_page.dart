@@ -193,7 +193,7 @@ class _SalesPageState extends State<SalesPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+  Widget build(BuildContext context) => SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
     if (loading) const LinearProgressIndicator(),
     if (error != null) Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
     Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -249,5 +249,5 @@ class _SalesPageState extends State<SalesPage> {
       ]),
       onTap: () => showInvoiceDetails(i),
     ))),
-  ]);
+  ]));
 }
