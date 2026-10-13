@@ -160,8 +160,12 @@ class _CustomersPageState extends State<CustomersPage> {
       return Card(child: ListTile(
         leading: const CircleAvatar(child: Icon(Icons.person_outline)),
         title: Text(c['name']?.toString() ?? ''),
-        subtitle: Text('${c['phone'] ?? 'بدون هاتف'} • رصيد افتتاحي: ${formatMoney((c['opening_balance'] as num?) ?? 0)} ج.م'),
-        trailing: const Icon(Icons.chevron_left),
+        subtitle: Text('${c['phone'] ?? 'بدون هاتف'} • رصيد افتتاحي: ${formatMoney((c['opening_balance'] as num?) ?? 0)} ج.م\nاضغط لعرض إجمالي المبيعات والأرباح والفواتير'),
+        isThreeLine: true,
+        trailing: FilledButton.tonal(
+          onPressed: () => showCustomerDetails(c),
+          child: const Text('كشف الحساب'),
+        ),
         onTap: () => showCustomerDetails(c),
       ));
     })),
