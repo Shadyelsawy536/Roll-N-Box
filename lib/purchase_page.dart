@@ -100,7 +100,7 @@ class _PurchasePageState extends State<PurchasePage> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+  Widget build(BuildContext context) => SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
     if (loading) const LinearProgressIndicator(),
     if (error != null) Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
     Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -140,5 +140,5 @@ class _PurchasePageState extends State<PurchasePage> {
     const SizedBox(height: 8),
     if (invoices.isEmpty && !loading) const Text('لا توجد فواتير مشتريات حتى الآن.')
     else ...invoices.map((i) => Card(child: ListTile(leading: const Icon(Icons.receipt_long_outlined), title: Text('فاتورة رقم ${i['invoice_number']}'), subtitle: Text('${(i['suppliers'] as Map?)?['name'] ?? 'بدون مورد'} • ${(i['warehouses'] as Map?)?['name'] ?? ''}'), trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [Text(money((i['total'] as num?) ?? 0)), Text(paymentMethods[i['payment_method']?.toString()] ?? 'غير محدد', style: const TextStyle(fontSize: 12)), Text(i['payment_status'] == 'paid' ? 'مدفوعة' : i['payment_status'] == 'partial' ? 'مدفوعة جزئيًا' : 'مستحقات', style: TextStyle(fontSize: 12, color: i['payment_status'] == 'paid' ? Colors.green : Colors.orange))])))),
-  ]);
+  ]));
 }
