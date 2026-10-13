@@ -1,0 +1,1 @@
+revoke update, delete on table public.sales_returns, public.sales_return_items, public.purchase_returns, public.purchase_return_items from authenticated;
