@@ -123,6 +123,75 @@ class _SalesPageState extends State<SalesPage> {
     } finally { if (mounted) setState(() => saving = false); }
   }
 
+
+  Future<void> showInvoiceDetails(Map<String, dynamic> invoice) async {
+    try {
+      final invoiceId = invoice['id'].toString();
+      final result = await Future.wait([
+        db.from('sales_invoice_items').select('id,product_id,quantity,unit_price,unit_cost,discount_amount,tax_amount,line_total,products(name)').eq('invoice_id', invoiceId),
+        db.from('sales_return_items').select('quantity,unit_cost,line_total,sales_returns!inner(sales_invoice_id)').eq('sales_returns.sales_invoice_id', invoiceId),
+      ]);
+      final lines = List<Map<String, dynamic>>.from(result[0]);
+      final returned = List<Map<String, dynamic>>.from(result[1]);
+      double n(dynamic v) => (v as num?)?.toDouble() ?? 0;
+      final soldProfit = lines.fold<double>(0, (sum, line) {
+        final qty = n(line['quantity']);
+        final cost = n(line['unit_cost']) * qty;
+        final revenueExTax = n(line['line_total']) - n(line['tax_amount']);
+        return sum + revenueExTax - cost;
+      });
+      final returnedProfit = returned.fold<double>(0, (sum, line) =>
+        sum + n(line['line_total']) - (n(line['unit_cost']) * n(line['quantity'])));
+      final profit = soldProfit - returnedProfit;
+      if (!mounted) return;
+      await showDialog<void>(context: context, builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: Text('تفاصيل وربح فاتورة #${invoice['invoice_number']}'),
+          content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('إجمالي الفاتورة: ${money(n(invoice['total']))}'),
+              const SizedBox(height: 6),
+              Text('تكلفة البضاعة: ${money(lines.fold<double>(0, (sum, x) => sum + n(x['quantity']) * n(x['unit_cost'])))}'),
+              Text('ربح الفاتورة بعد خصم المرتجعات: ${money(profit)}',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: profit >= 0 ? Colors.green.shade700 : Colors.red.shade700)),
+              const Divider(height: 24),
+              const Text('تفاصيل الأصناف', style: TextStyle(fontWeight: FontWeight.bold)),
+              ...lines.map((line) {
+                final qty = n(line['quantity']);
+                final revenue = n(line['line_total']) - n(line['tax_amount']);
+                final cost = qty * n(line['unit_cost']);
+                final lineProfit = revenue - cost;
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(((line['products'] as Map?)?['name'] ?? 'صنف').toString()),
+                  subtitle: Text('الكمية: ${formatMoney(qty)} • التكلفة: ${money(cost)}'),
+                  trailing: Text(money(lineProfit), style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: lineProfit >= 0 ? Colors.green.shade700 : Colors.red.shade700)),
+                );
+              }),
+              if (returned.isNotEmpty)
+                Text('تم احتساب ${returned.length} بند/بنود مرتجعة ضمن صافي الربح.',
+                  style: const TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              const Text('الربح هنا ربح إجمالي قبل المصروفات التشغيلية، ويُحسب من تكلفة الصنف المسجلة وقت الفاتورة.',
+                style: TextStyle(fontSize: 12)),
+            ],
+          ))),
+          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إغلاق'))],
+        ),
+      ));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر حساب ربح الفاتورة: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
     if (loading) const LinearProgressIndicator(),
@@ -174,7 +243,11 @@ class _SalesPageState extends State<SalesPage> {
     else ...invoices.map((i) => Card(child: ListTile(
       leading: const Icon(Icons.receipt_long_outlined), title: Text('فاتورة رقم ${i['invoice_number']}'),
       subtitle: Text('${(i['customers'] as Map?)?['name'] ?? 'بيع نقدي'} • ${(i['warehouses'] as Map?)?['name'] ?? ''} • ${i['payment_status'] == 'paid' ? 'مدفوعة' : i['payment_status'] == 'partial' ? 'مدفوعة جزئيًا' : 'آجلة'}'),
-      trailing: Text(money((i['total'] as num?) ?? 0)),
+      trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Text(money((i['total'] as num?) ?? 0)),
+        const Text('عرض الربح', style: TextStyle(fontSize: 11, color: Color(0xFF176B55))),
+      ]),
+      onTap: () => showInvoiceDetails(i),
     ))),
   ]);
 }
