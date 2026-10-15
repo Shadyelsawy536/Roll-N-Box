@@ -155,6 +155,7 @@ class _AuthGateState extends State<AuthGate> {
     super.initState();
     _session = _client.auth.currentSession;
     _passwordSetup = _isInviteOrRecoveryLink || _needsPasswordSetupFromUser;
+    _checkInvitePasswordSetup(_session);
     _subscription = _client.auth.onAuthStateChange.listen((event) {
       if (mounted) {
         setState(() {
@@ -164,7 +165,35 @@ class _AuthGateState extends State<AuthGate> {
           }
         });
       }
+      _checkInvitePasswordSetup(event.session);
     });
+  }
+
+  Future<void> _checkInvitePasswordSetup(Session? session) async {
+    if (session == null) return;
+    final marker = session.user.userMetadata?['pack_master_password_setup'];
+    if (marker == true) {
+      if (mounted && !_passwordSetup) setState(() => _passwordSetup = true);
+      return;
+    }
+    // Older invitations may not carry the metadata marker. Membership records
+    // identify invited users so they are asked to create a password on first use.
+    if (marker == false) return;
+    try {
+      final membership = await _client
+          .from('workspace_memberships')
+          .select('invited_by')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+      if (membership != null && membership['invited_by'] != null) {
+        await _client.auth.updateUser(
+          UserAttributes(data: {'pack_master_password_setup': true}),
+        );
+        if (mounted) setState(() => _passwordSetup = true);
+      }
+    } catch (_) {
+      // Keep sign-in available if membership metadata cannot be checked.
+    }
   }
 
   @override
