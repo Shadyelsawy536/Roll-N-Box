@@ -45,6 +45,6 @@ The repository currently contains the initial application scaffold. Business mod
 
 - All invited users share the existing business workspace and its records.
 - User invitations are sent by the Supabase Edge Function `send-invite`; the service-role key stays server-side.
-- In the Supabase Dashboard, open **Authentication → URL Configuration** and set **Site URL** to the actual production Pack Master Vercel URL. Add that same URL to the allowed Redirect URLs so invite links return to the app's password-setup screen.
+- The invitation function redirects to `https://packmaster-eight.vercel.app`. In the Supabase Dashboard, open **Authentication → URL Configuration** and add `https://packmaster-eight.vercel.app` (or `https://packmaster-eight.vercel.app/**`) to **Redirect URLs**; set **Site URL** to the same production URL so auth links return to the app's password-setup screen.
 - New users should be invited from **Settings → إدارة المستخدمين**. Public sign-up is not exposed in the app.
 - The SQL migration source is in `supabase/migrations`; the invitation function source is in `supabase/functions/send-invite`.
