@@ -65,7 +65,10 @@ Deno.serve(async (req: Request) => {
     return json(403, { error: "حسابك غير مرتبط بنشاط مصرح له بإرسال الدعوات." });
   }
 
-  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: "https://packmaster-eight.vercel.app" });
+  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: "https://packmaster-eight.vercel.app",
+    data: { pack_master_password_setup: true },
+  });
   if (inviteError || !invited.user) {
     return json(400, {
       error: inviteError?.message ?? "تعذر إنشاء حساب للمستخدم المدعو. تأكد أن البريد غير مسجل بالفعل.",
