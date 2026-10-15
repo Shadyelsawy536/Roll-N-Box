@@ -66,7 +66,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: "https://packmaster-eight.vercel.app",
+    redirectTo: "https://shadyelsawy536.github.io/inv-management/",
     data: { pack_master_password_setup: true },
   });
   if (inviteError || !invited.user) {
