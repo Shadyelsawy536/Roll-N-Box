@@ -189,6 +189,42 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) => ListView(
     children: [
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('إدارة المستخدمين', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 6),
+              const Text(
+                'ادعُ شريكًا جديدًا بالبريد الإلكتروني. كل المستخدمين المدعوين '
+                'لديهم نفس صلاحياتك على بيانات النشاط، ويمكنهم دعوة مستخدمين آخرين.',
+                style: TextStyle(height: 1.5),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: inviteEmail,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'البريد الإلكتروني للمستخدم الجديد',
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: sendingInvite ? null : sendInvite,
+                icon: sendingInvite
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.person_add_alt_1_outlined),
+                label: Text(sendingInvite ? 'جارٍ إرسال الدعوة...' : 'إرسال دعوة'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
       if (loading) const LinearProgressIndicator(),
       if (error != null) Padding(padding: const EdgeInsets.all(12), child: Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error))),
       Card(
