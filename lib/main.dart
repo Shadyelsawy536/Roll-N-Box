@@ -138,6 +138,9 @@ class _AuthGateState extends State<AuthGate> {
   Session? _session;
   bool _passwordSetup = false;
 
+  bool get _needsPasswordSetupFromUser =>
+      _client.auth.currentUser?.userMetadata['pack_master_password_setup'] == true;
+
   bool get _isInviteOrRecoveryLink {
     try {
       final params = Uri.splitQueryString(Uri.base.fragment);
@@ -151,12 +154,12 @@ class _AuthGateState extends State<AuthGate> {
   void initState() {
     super.initState();
     _session = _client.auth.currentSession;
-    _passwordSetup = _isInviteOrRecoveryLink;
+    _passwordSetup = _isInviteOrRecoveryLink || _needsPasswordSetupFromUser;
     _subscription = _client.auth.onAuthStateChange.listen((event) {
       if (mounted) {
         setState(() {
           _session = event.session;
-          if (event.event == AuthChangeEvent.passwordRecovery || _isInviteOrRecoveryLink) {
+          if (event.event == AuthChangeEvent.passwordRecovery || _isInviteOrRecoveryLink || _needsPasswordSetupFromUser) {
             _passwordSetup = true;
           }
         });
@@ -208,7 +211,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
     setState(() { _loading = true; _error = null; });
     try {
       await Supabase.instance.client.auth.updateUser(
-        UserAttributes(password: _password.text),
+        UserAttributes(password: _password.text, data: {'pack_master_password_setup': false}),
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
