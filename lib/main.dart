@@ -139,7 +139,7 @@ class _AuthGateState extends State<AuthGate> {
   bool _passwordSetup = false;
 
   bool get _needsPasswordSetupFromUser =>
-      _client.auth.currentUser?.userMetadata['pack_master_password_setup'] == true;
+      (_client.auth.currentUser?.userMetadata ?? <String, dynamic>{})['pack_master_password_setup'] == true;
 
   bool get _isInviteOrRecoveryLink {
     try {
