@@ -18,8 +18,9 @@ create policy workspace_memberships_read_self on public.workspace_memberships
   for select to authenticated using (user_id = (select auth.uid()));
 
 insert into public.workspace_memberships (user_id, workspace_owner_id, invited_by, invited_email)
-select id, id, id, email from auth.users
-where id = '39ee9ce4-4f70-4a4a-8a7e-ab65f7e4463c'::uuid
+select u.id, u.id, u.id, u.email
+from auth.users u
+join public.business_settings bs on bs.owner_id = u.id
 on conflict (user_id) do nothing;
 
 create or replace function private.current_workspace_owner_id()
