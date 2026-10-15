@@ -136,13 +136,31 @@ class _AuthGateState extends State<AuthGate> {
   late final SupabaseClient _client = Supabase.instance.client;
   StreamSubscription<AuthState>? _subscription;
   Session? _session;
+  bool _passwordSetup = false;
+
+  bool get _isInviteOrRecoveryLink {
+    try {
+      final params = Uri.splitQueryString(Uri.base.fragment);
+      return params['type'] == 'invite' || params['type'] == 'recovery';
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _session = _client.auth.currentSession;
+    _passwordSetup = _isInviteOrRecoveryLink;
     _subscription = _client.auth.onAuthStateChange.listen((event) {
-      if (mounted) setState(() => _session = event.session);
+      if (mounted) {
+        setState(() {
+          _session = event.session;
+          if (event.event == AuthChangeEvent.passwordRecovery || _isInviteOrRecoveryLink) {
+            _passwordSetup = true;
+          }
+        });
+      }
     });
   }
 
@@ -155,7 +173,125 @@ class _AuthGateState extends State<AuthGate> {
   @override
   Widget build(BuildContext context) => _session == null
       ? const SignInPage()
-      : HomePage(onSignOut: () => _client.auth.signOut());
+      : _passwordSetup
+          ? SetPasswordPage(onCompleted: () {
+              if (mounted) setState(() => _passwordSetup = false);
+            })
+          : HomePage(onSignOut: () => _client.auth.signOut());
+}
+
+class SetPasswordPage extends StatefulWidget {
+  const SetPasswordPage({required this.onCompleted, super.key});
+  final VoidCallback onCompleted;
+
+  @override
+  State<SetPasswordPage> createState() => _SetPasswordPageState();
+}
+
+class _SetPasswordPageState extends State<SetPasswordPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _password = TextEditingController();
+  final _confirmPassword = TextEditingController();
+  bool _loading = false;
+  bool _hidePassword = true;
+  String? _error;
+
+  @override
+  void dispose() {
+    _password.dispose();
+    _confirmPassword.dispose();
+    super.dispose();
+  }
+
+  Future<void> _savePassword() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() { _loading = true; _error = null; });
+    try {
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(password: _password.text),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم حفظ كلمة المرور بنجاح')),
+      );
+      widget.onCompleted();
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } catch (_) {
+      if (mounted) setState(() => _error = 'تعذر حفظ كلمة المرور. افتح رابط الدعوة مرة أخرى.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(28),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Icon(Icons.lock_reset_outlined, size: 46),
+                          const SizedBox(height: 16),
+                          Text('إنشاء كلمة المرور', textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+                          const Text('أنشئ كلمة مرور لحساب Pack Master للمتابعة.', textAlign: TextAlign.center),
+                          const SizedBox(height: 24),
+                          TextFormField(
+                            controller: _password,
+                            obscureText: _hidePassword,
+                            decoration: InputDecoration(
+                              labelText: 'كلمة المرور الجديدة',
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                onPressed: () => setState(() => _hidePassword = !_hidePassword),
+                                icon: Icon(_hidePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                              ),
+                            ),
+                            validator: (value) => (value ?? '').length >= 8 ? null : 'استخدم 8 أحرف على الأقل',
+                          ),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _confirmPassword,
+                            obscureText: _hidePassword,
+                            decoration: const InputDecoration(labelText: 'تأكيد كلمة المرور', prefixIcon: Icon(Icons.lock_outline)),
+                            validator: (value) => value == _password.text ? null : 'كلمتا المرور غير متطابقتين',
+                          ),
+                          if (_error != null) ...[
+                            const SizedBox(height: 12),
+                            Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                          ],
+                          const SizedBox(height: 18),
+                          FilledButton(
+                            onPressed: _loading ? null : _savePassword,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: _loading
+                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : const Text('حفظ كلمة المرور والمتابعة'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 }
 
 class SignInPage extends StatefulWidget {
