@@ -16,11 +16,13 @@ class _SettingsPageState extends State<SettingsPage> {
   final warehouseCode = TextEditingController();
   final warehouseAddress = TextEditingController();
   final inviteEmail = TextEditingController();
+  final newPassword = TextEditingController();
+  final confirmNewPassword = TextEditingController();
   List<Map<String, dynamic>> warehouses = [];
   String currencyCode = 'EGP';
   String currencySymbol = 'ج.م';
   String? defaultWarehouseId;
-  bool loading = true, savingBusiness = false, savingWarehouse = false, sendingInvite = false;
+  bool loading = true, savingBusiness = false, savingWarehouse = false, sendingInvite = false, savingPassword = false;
   String? error;
 
   @override
@@ -38,6 +40,8 @@ class _SettingsPageState extends State<SettingsPage> {
     warehouseCode.dispose();
     warehouseAddress.dispose();
     inviteEmail.dispose();
+    newPassword.dispose();
+    confirmNewPassword.dispose();
     super.dispose();
   }
 
@@ -167,6 +171,52 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+
+  Future<void> changePassword() async {
+    if (newPassword.text.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('كلمة المرور يجب أن تكون 8 أحرف على الأقل')),
+      );
+      return;
+    }
+    if (newPassword.text != confirmNewPassword.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('كلمتا المرور غير متطابقتين')),
+      );
+      return;
+    }
+    setState(() => savingPassword = true);
+    try {
+      await db.auth.updateUser(
+        UserAttributes(
+          password: newPassword.text,
+          data: {'pack_master_password_setup': false},
+        ),
+      );
+      newPassword.clear();
+      confirmNewPassword.clear();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم تغيير كلمة المرور بنجاح')),
+        );
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('تعذر تغيير كلمة المرور: ${e.message}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('تعذر تغيير كلمة المرور: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => savingPassword = false);
+    }
+  }
+
   Future<void> setDefaultWarehouse(String id) async {
     try {
       await db.from('warehouses').update({'is_default': false}).neq('id', id);
@@ -219,6 +269,51 @@ class _SettingsPageState extends State<SettingsPage> {
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.person_add_alt_1_outlined),
                 label: Text(sendingInvite ? 'جارٍ إرسال الدعوة...' : 'إرسال دعوة'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('الأمان وكلمة المرور', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 6),
+              const Text(
+                'أنشئ كلمة مرور لحسابك أو غيّر كلمة المرور الحالية في أي وقت.',
+                style: TextStyle(height: 1.5),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: newPassword,
+                obscureText: true,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'كلمة المرور الجديدة (8 أحرف على الأقل)',
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: confirmNewPassword,
+                obscureText: true,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'تأكيد كلمة المرور الجديدة',
+                  prefixIcon: Icon(Icons.lock_reset_outlined),
+                ),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: savingPassword ? null : changePassword,
+                icon: savingPassword
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.password_outlined),
+                label: Text(savingPassword ? 'جارٍ حفظ كلمة المرور...' : 'حفظ / تغيير كلمة المرور'),
               ),
             ],
           ),
