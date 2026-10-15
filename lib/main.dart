@@ -169,11 +169,9 @@ class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
-  bool _register = false;
   bool _loading = false;
   bool _hidePassword = true;
   String? _error;
-  String? _message;
 
   @override
   void dispose() {
@@ -187,24 +185,13 @@ class _SignInPageState extends State<SignInPage> {
     setState(() {
       _loading = true;
       _error = null;
-      _message = null;
     });
     try {
       final auth = Supabase.instance.client.auth;
-      if (_register) {
-        final result = await auth.signUp(
-          email: _email.text.trim(),
-          password: _password.text,
-        );
-        if (result.session == null && mounted) {
-          setState(() => _message = 'راجع بريدك الإلكتروني لتأكيد الحساب إذا طُلب ذلك.');
-        }
-      } else {
-        await auth.signInWithPassword(
-          email: _email.text.trim(),
-          password: _password.text,
-        );
-      }
+      await auth.signInWithPassword(
+        email: _email.text.trim(),
+        password: _password.text,
+      );
     } on AuthException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
@@ -243,7 +230,7 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _register ? 'أنشئ حسابك للبدء' : 'سجّل الدخول إلى حسابك',
+                            'سجّل الدخول إلى حسابك',
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
@@ -287,12 +274,6 @@ class _SignInPageState extends State<SignInPage> {
                               color: Theme.of(context).colorScheme.error,
                             )),
                           ],
-                          if (_message != null) ...[
-                            const SizedBox(height: 12),
-                            Text(_message!, style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                            )),
-                          ],
                           const SizedBox(height: 18),
                           FilledButton(
                             onPressed: _loading ? null : _submit,
@@ -304,20 +285,8 @@ class _SignInPageState extends State<SignInPage> {
                                       width: 20,
                                       child: CircularProgressIndicator(strokeWidth: 2),
                                     )
-                                  : Text(_register ? 'إنشاء حساب' : 'تسجيل الدخول'),
+                                  : const Text('تسجيل الدخول'),
                             ),
-                          ),
-                          TextButton(
-                            onPressed: _loading
-                                ? null
-                                : () => setState(() {
-                                      _register = !_register;
-                                      _error = null;
-                                      _message = null;
-                                    }),
-                            child: Text(_register
-                                ? 'لديك حساب؟ سجّل الدخول'
-                                : 'إنشاء حساب جديد'),
                           ),
                         ],
                       ),
