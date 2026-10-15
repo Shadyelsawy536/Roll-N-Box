@@ -241,7 +241,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Icon(Icons.lock_reset_outlined, size: 46),
+                          const Icon(Icons.lock_outline, size: 46),
                           const SizedBox(height: 16),
                           Text('إنشاء كلمة المرور', textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
