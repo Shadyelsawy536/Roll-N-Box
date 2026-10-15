@@ -47,7 +47,8 @@ Deno.serve(async (req: Request) => {
   }
 
   const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  const emailParts = email.split("@");
+  if (emailParts.length !== 2 || !emailParts[0] || !emailParts[1].includes(".")) {
     return json(400, { error: "اكتب بريدًا إلكترونيًا صحيحًا." });
   }
   if (email === (caller.email ?? "").toLowerCase()) {
