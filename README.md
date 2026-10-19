@@ -1,6 +1,6 @@
-# Inv Management
+# Roll N Box
 
-A personal, online-first inventory and shop management system built with Flutter and Supabase.
+Roll N Box is an online-first inventory, sales, purchasing, and business management app built with Flutter and Supabase.
 
 ## Planned modules
 
@@ -26,7 +26,7 @@ A personal, online-first inventory and shop management system built with Flutter
 1. Install Flutter and Git.
 2. Run `flutter pub get`.
 3. Configure the Supabase URL and publishable key using Dart defines.
-4. Run the web app:
+4. Build the Android app:
 
 ```powershell
 flutter build apk --release --dart-define=SUPABASE_URL=https://bnnqbrqlgubodkauguoj.supabase.co --dart-define=SUPABASE_PUBLISHABLE_KEY=sb_publishable_TBse2DaqNLO5p2UqPkdnmQ_7H6tjcI3
@@ -45,6 +45,6 @@ The repository currently contains the initial application scaffold. Business mod
 
 - All invited users share the existing business workspace and its records.
 - User invitations are sent by the Supabase Edge Function `send-invite`; the service-role key stays server-side.
-- The invitation function redirects to `https://packmaster-eight.vercel.app`. In the Supabase Dashboard, open **Authentication → URL Configuration** and add `https://packmaster-eight.vercel.app` (or `https://packmaster-eight.vercel.app/**`) to **Redirect URLs**; set **Site URL** to the same production URL so auth links return to the app's password-setup screen.
-- New users should be invited from **Settings → إدارة المستخدمين**. Public sign-up is not exposed in the app.
+- The invitation function redirects to `https://packmaster-nu.vercel.app`. In the Supabase Dashboard, open **Authentication → URL Configuration** and add `https://packmaster-eight.vercel.app` (or `https://packmaster-eight.vercel.app/**`) to **Redirect URLs**; set **Site URL** to the same production URL so auth links return to the app's password-setup screen.
+- New users should be invited from **Roll N Box → Settings → إدارة المستخدمين**. Public sign-up is not exposed in the app.
 - The SQL migration source is in `supabase/migrations`; the invitation function source is in `supabase/functions/send-invite`.
