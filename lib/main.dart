@@ -37,7 +37,7 @@ class InventoryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'Pack Master',
+        title: 'Roll N Box',
         debugShowCheckedModeBanner: false,
         locale: const Locale('ar'),
         supportedLocales: const [Locale('ar'), Locale('en')],
@@ -278,7 +278,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
                           Text('إنشاء كلمة المرور', textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
-                          const Text('أنشئ كلمة مرور لحساب Pack Master للمتابعة.', textAlign: TextAlign.center),
+                          const Text('أنشئ كلمة مرور لحساب Roll N Box للمتابعة.', textAlign: TextAlign.center),
                           const SizedBox(height: 24),
                           TextFormField(
                             controller: _password,
@@ -506,7 +506,7 @@ class _HomePageState extends State<HomePage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Pack Master', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('Roll N Box', style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
               tooltip: 'تسجيل الخروج',
