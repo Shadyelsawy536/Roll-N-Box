@@ -1,11 +1,11 @@
 {
-    "name": "Pack Master",
-    "short_name": "Pack Master",
+    "name": "Roll N Box",
+    "short_name": "Roll N Box",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#176B55",
-    "theme_color": "#0175C2",
-    "description": "Pack Master - Inventory and Business Management",
+    "theme_color": "#176B55",
+    "description": "Roll N Box - Inventory and Business Management",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
