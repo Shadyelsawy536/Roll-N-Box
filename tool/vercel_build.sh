@@ -32,4 +32,4 @@ flutter build web --release \
   --dart-define="SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY"
 
 test -f build/web/index.html
-echo "Pack Master Flutter Web build completed."
+echo "Roll N Box Flutter Web build completed."
