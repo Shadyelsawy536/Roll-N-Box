@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="Pack Master"
+        android:label="Roll N Box"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
